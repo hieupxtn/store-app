@@ -1,29 +1,81 @@
 import db from '../models/index'
-import UserService from '../services/UserServices'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
 
-let handleLogin = async (req, res) => {
+let register = async (req, res) => {
     try {
-        let email = req.body.email;
-        let password = req.body.password;
-
-        if(!email || !password) {
-            return res.status(500).json({
-                errCode: 1,
-                message: "Missing inputs parameter"
-            })
+        let { email, password, firstName, lastName, address, gender, role } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Missing email or password' });
         }
-
-        let userData = await UserService.handleUserLogin(email, password);
-        return res.status(200).json({
-            errCode: userData.errCode,
-            message: userData.errMessage,
-            user: userData?.user ? userData : {},
-        })
+        let hash = bcrypt.hashSync(password, 10);
+        let user = await db.User.create({ email, password: hash, firstName, lastName, address, gender, role });
+        return res.status(201).json({ user });
     } catch (e) {
-        console.log(e)
+        return res.status(500).json({ message: e.message });
     }
-}
+};
 
-module.exports = {
-    handleLogin,
-}
+let login = async (req, res) => {
+    try {
+        let { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Missing email or password' });
+        }
+        let user = await db.User.findOne({ where: { email } });
+        if (!user || !bcrypt.compareSync(password, user.password)) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+        const token = jwt.sign(
+            { id: user.id, email: user.email, role: user.role },
+            process.env.JWT_SECRET || 'your_jwt_secret',
+            { expiresIn: '1d' }
+        );
+        return res.status(200).json({ user, token });
+    } catch (e) {
+        return res.status(500).json({ message: e.message });
+    }
+};
+
+let getAll = async (req, res) => {
+    try {
+        let users = await db.User.findAll();
+        return res.status(200).json({ users });
+    } catch (e) {
+        return res.status(500).json({ message: e.message });
+    }
+};
+
+let getById = async (req, res) => {
+    try {
+        let user = await db.User.findByPk(req.params.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        return res.status(200).json({ user });
+    } catch (e) {
+        return res.status(500).json({ message: e.message });
+    }
+};
+
+let update = async (req, res) => {
+    try {
+        let user = await db.User.findByPk(req.params.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        await user.update(req.body);
+        return res.status(200).json({ user });
+    } catch (e) {
+        return res.status(500).json({ message: e.message });
+    }
+};
+
+let remove = async (req, res) => {
+    try {
+        let user = await db.User.findByPk(req.params.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        await user.destroy();
+        return res.status(204).send();
+    } catch (e) {
+        return res.status(500).json({ message: e.message });
+    }
+};
+
+module.exports = { register, login, getAll, getById, update, remove };

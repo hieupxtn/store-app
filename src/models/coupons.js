@@ -14,11 +14,9 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   Coupon.init({
-    startDate: DataTypes.DATE,
-    endDate: DataTypes.DATE,
-    productId: DataTypes.INTEGER,
-    couponRate: DataTypes.INTEGER,
-    total: DataTypes.INTEGER,
+    code: DataTypes.STRING,
+    discount: DataTypes.INTEGER,
+    expiryDate: DataTypes.DATE,
   }, {
     sequelize,
     modelName: 'Coupon',

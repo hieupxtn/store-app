@@ -36,9 +36,30 @@ let createUser = async (req, res) => {
     }
 }
 
+let getFeaturedProducts = async (req, res) => {
+    try {
+        let products = await db.Product.findAll({
+            where: { rating: { [db.Sequelize.Op.gte]: 4 } },
+            limit: 10
+        });
+        return res.status(200).json({
+            errCode: 0,
+            message: 'OK',
+            products
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            errCode: 1,
+            message: 'Error retrieving featured products'
+        });
+    }
+}
+
 module.exports = {
     getHomePage,
     getAboutPage,
     getAllUsers,
     createUser,
+    getFeaturedProducts,
 }
