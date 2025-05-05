@@ -37,6 +37,11 @@ let login = async (req, res) => {
     }
 };
 
+let logout = async (req, res) => {
+    // Với JWT, logout chỉ cần FE xóa token, backend chỉ trả về thông báo
+    return res.status(200).json({ message: 'Logout successful' });
+};
+
 let getAll = async (req, res) => {
     try {
         let users = await db.User.findAll();
@@ -78,4 +83,4 @@ let remove = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getAll, getById, update, remove };
+module.exports = { register, login, logout, getAll, getById, update, remove };

@@ -48,6 +48,7 @@ let initWebRoutes = (app) => {
     router.post('/api/coupons/apply', couponController.applyCoupon);
     router.post('/api/reviews', reviewController.create);
     router.get('/api/reviews/:productId', reviewController.getByProduct);
+    router.post('/api/logout', userController.logout);
 
     return app.use("/", router);
 }
