@@ -2,7 +2,9 @@ import db from '../models/index';
 
 let getAll = async (req, res) => {
     try {
-        let products = await db.Product.findAll();
+        let products = await db.Product.findAll({
+            include: [{ model: db.ProductType }]
+        });
         return res.status(200).json({ products });
     } catch (e) {
         return res.status(500).json({ message: e.message });
@@ -59,4 +61,30 @@ let getFeatured = async (req, res) => {
     }
 };
 
-module.exports = { getAll, getById, create, update, remove, getFeatured }; 
+let getBestSellers = async (req, res) => {
+    try {
+        let products = await db.Product.findAll({
+            order: [['quantity', 'ASC']],
+            limit: 10,
+            include: [{ model: db.ProductType }]
+        });
+        return res.status(200).json({ products });
+    } catch (e) {
+        return res.status(500).json({ message: e.message });
+    }
+};
+
+let getNewProducts = async (req, res) => {
+    try {
+        let products = await db.Product.findAll({
+            order: [['createdAt', 'DESC']],
+            limit: 10,
+            include: [{ model: db.ProductType }]
+        });
+        return res.status(200).json({ products });
+    } catch (e) {
+        return res.status(500).json({ message: e.message });
+    }
+};
+
+module.exports = { getAll, getById, create, update, remove, getFeatured, getBestSellers, getNewProducts }; 

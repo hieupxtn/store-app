@@ -7,6 +7,8 @@ import orderController from '../controllers/orderController';
 import shoppingcartController from '../controllers/shoppingcartController';
 import couponController from '../controllers/couponController';
 import reviewController from '../controllers/reviewController';
+import adminController from '../controllers/adminController';
+import brandController from '../controllers/brandController';
 import { authenticateJWT, isAdmin } from '../middleware/auth';
 
 let router = express.Router();
@@ -49,6 +51,16 @@ let initWebRoutes = (app) => {
     router.post('/api/reviews', reviewController.create);
     router.get('/api/reviews/:productId', reviewController.getByProduct);
     router.post('/api/logout', userController.logout);
+    router.get('/api/best-sellers', productController.getBestSellers);
+    router.get('/api/new-products', productController.getNewProducts);
+    router.get('/api/admin/dashboard-statistics', adminController.dashboardStatistics);
+
+    // Brand routes
+    router.get('/api/brands', brandController.getAllBrands);
+    router.get('/api/brands/:id', brandController.getBrandById);
+    router.post('/api/brands', authenticateJWT, isAdmin, brandController.createBrand);
+    router.put('/api/brands/:id', authenticateJWT, isAdmin, brandController.updateBrand);
+    router.delete('/api/brands/:id', authenticateJWT, isAdmin, brandController.deleteBrand);
 
     return app.use("/", router);
 }
