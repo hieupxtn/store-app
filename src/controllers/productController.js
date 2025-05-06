@@ -3,7 +3,17 @@ import db from '../models/index';
 let getAll = async (req, res) => {
     try {
         let products = await db.Product.findAll({
-            include: [{ model: db.ProductType }]
+            include: [{ model: db.ProductType }],
+            attributes: [
+                'id',
+                'productName',
+                'price',
+                'image',
+                'description',
+                'specifications',
+                'rating',
+                'quantity'
+            ]
         });
         return res.status(200).json({ products });
     } catch (e) {
@@ -13,7 +23,22 @@ let getAll = async (req, res) => {
 
 let getById = async (req, res) => {
     try {
-        let product = await db.Product.findByPk(req.params.id);
+        let product = await db.Product.findByPk(req.params.id, {
+            include: [
+                { model: db.ProductType },
+                { model: db.Brand }
+            ],
+            attributes: [
+                'id',
+                'productName',
+                'price',
+                'image',
+                'description',
+                'specifications',
+                'rating',
+                'quantity'
+            ]
+        });
         if (!product) return res.status(404).json({ message: 'Product not found' });
         return res.status(200).json({ product });
     } catch (e) {
@@ -54,7 +79,7 @@ let remove = async (req, res) => {
 
 let getFeatured = async (req, res) => {
     try {
-        let products = await db.Product.findAll({ where: { rating: { [db.Sequelize.Op.gte]: 4 } }, limit: 10 });
+        let products = await db.Product.findAll({ where: { rating: { [db.Sequelize.Op.gte]: 4 } }, limit: 8 });
         return res.status(200).json({ products });
     } catch (e) {
         return res.status(500).json({ message: e.message });
@@ -110,10 +135,34 @@ let getRelatedProducts = async (req, res) => {
             include: [
                 { model: db.ProductType },
                 { model: db.Brand }
+            ],
+            attributes: [
+                'id',
+                'productName',
+                'price',
+                'image',
+                'description',
+                'specifications',
+                'rating',
+                'quantity'
             ]
         });
 
-        return res.status(200).json({ relatedProducts });
+        return res.status(200).json({ 
+            relatedProducts,
+            currentProduct: {
+                id: product.id,
+                productName: product.productName,
+                price: product.price,
+                image: product.image,
+                description: product.description,
+                specifications: product.specifications,
+                rating: product.rating,
+                quantity: product.quantity,
+                ProductType: product.ProductType,
+                Brand: product.Brand
+            }
+        });
     } catch (e) {
         return res.status(500).json({ message: e.message });
     }
