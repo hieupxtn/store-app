@@ -53,6 +53,7 @@ let initWebRoutes = (app) => {
     router.post('/api/logout', userController.logout);
     router.get('/api/best-sellers', productController.getBestSellers);
     router.get('/api/new-products', productController.getNewProducts);
+    router.get('/api/products/:id/related', productController.getRelatedProducts);
     router.get('/api/admin/dashboard-statistics', adminController.dashboardStatistics);
 
     // Brand routes

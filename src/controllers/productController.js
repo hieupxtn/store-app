@@ -87,4 +87,36 @@ let getNewProducts = async (req, res) => {
     }
 };
 
-module.exports = { getAll, getById, create, update, remove, getFeatured, getBestSellers, getNewProducts }; 
+let getRelatedProducts = async (req, res) => {
+    try {
+        const productId = req.params.id;
+        const product = await db.Product.findByPk(productId);
+        
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        const relatedProducts = await db.Product.findAll({
+            where: {
+                [db.Sequelize.Op.or]: [
+                    { productTypeId: product.productTypeId },
+                    { brandId: product.brandId }
+                ],
+                id: {
+                    [db.Sequelize.Op.ne]: productId
+                }
+            },
+            limit: 8,
+            include: [
+                { model: db.ProductType },
+                { model: db.Brand }
+            ]
+        });
+
+        return res.status(200).json({ relatedProducts });
+    } catch (e) {
+        return res.status(500).json({ message: e.message });
+    }
+};
+
+module.exports = { getAll, getById, create, update, remove, getFeatured, getBestSellers, getNewProducts, getRelatedProducts }; 
