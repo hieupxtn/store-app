@@ -2,8 +2,86 @@ import db from '../models/index';
 
 let getAll = async (req, res) => {
     try {
+        const { search, minPrice, maxPrice, typeId, brandId, sort, minRating } = req.query;
+        
+        let whereClause = {};
+        
+        // Search by product name or description
+        if (search) {
+            whereClause[db.Sequelize.Op.or] = [
+                { productName: { [db.Sequelize.Op.like]: `%${search}%` } },
+                { description: { [db.Sequelize.Op.like]: `%${search}%` } }
+            ];
+        }
+
+        // Filter by price range
+        if (minPrice || maxPrice) {
+            whereClause.price = {};
+            if (minPrice) whereClause.price[db.Sequelize.Op.gte] = minPrice;
+            if (maxPrice) whereClause.price[db.Sequelize.Op.lte] = maxPrice;
+        }
+
+        // Filter by rating
+        if (minRating) {
+            whereClause.rating = {
+                [db.Sequelize.Op.gte]: parseFloat(minRating)
+            };
+        }
+
+        // Filter by product type
+        if (typeId) {
+            whereClause.productTypeId = typeId;
+        }
+
+        // Filter by brand
+        if (brandId) {
+            whereClause.brandId = brandId;
+        }
+
+        // Sorting options
+        let orderClause = [];
+        if (sort) {
+            switch (sort) {
+                case 'featured':
+                    whereClause.rating = { [db.Sequelize.Op.gte]: 4 };
+                    orderClause.push(['rating', 'DESC']);
+                    break;
+                case 'price_low':
+                    orderClause.push(['price', 'ASC']);
+                    break;
+                case 'price_high':
+                    orderClause.push(['price', 'DESC']);
+                    break;
+                case 'rating':
+                    orderClause.push(['rating', 'DESC']);
+                    break;
+                case 'newest':
+                    orderClause.push(['createdAt', 'DESC']);
+                    break;
+                case 'best_seller':
+                    orderClause = [
+                        [db.sequelize.literal(`
+                            (SELECT SUM(quantity) 
+                            FROM orderitems 
+                            WHERE orderitems.productId = Product.id)
+                        `), 'DESC'],
+                        ['createdAt', 'DESC']
+                    ];
+                    break;
+                default:
+                    orderClause.push(['createdAt', 'DESC']);
+            }
+        } else {
+            orderClause.push(['createdAt', 'DESC']);
+        }
+
         let products = await db.Product.findAll({
-            include: [{ model: db.ProductType }],
+            where: whereClause,
+            include: [
+                { model: db.ProductType },
+                { model: db.Brand }
+            ],
+            order: orderClause,
             attributes: [
                 'id',
                 'productName',

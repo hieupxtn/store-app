@@ -15,9 +15,17 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   Order.init({
-    userId: DataTypes.INTEGER,
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: true // Allow null for guest orders
+    },
     totalPrice: DataTypes.INTEGER,
     status: DataTypes.STRING,
+    shippingAddress: DataTypes.JSON,
+    paymentMethod: DataTypes.STRING,
+    customerName: DataTypes.STRING,
+    customerPhone: DataTypes.STRING,
+    customerEmail: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Order',

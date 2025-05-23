@@ -9,6 +9,7 @@ import couponController from '../controllers/couponController';
 import reviewController from '../controllers/reviewController';
 import adminController from '../controllers/adminController';
 import brandController from '../controllers/brandController';
+import paymentController from '../controllers/paymentController';
 import { authenticateJWT, isAdmin } from '../middleware/auth';
 
 let router = express.Router();
@@ -39,10 +40,11 @@ let initWebRoutes = (app) => {
     router.get('/api/orders/:id', orderController.getById);
     router.put('/api/orders/:id', orderController.update);
     router.delete('/api/orders/:id', orderController.remove);
-    router.get('/api/cart', shoppingcartController.getCart);
-    router.post('/api/cart', shoppingcartController.addToCart);
-    router.put('/api/cart/:itemId', shoppingcartController.updateCartItem);
-    router.delete('/api/cart/:itemId', shoppingcartController.removeCartItem);
+    router.get('/api/cart', authenticateJWT, shoppingcartController.getCart);
+    router.post('/api/cart', authenticateJWT, shoppingcartController.addToCart);
+    router.put('/api/cart/:itemId', authenticateJWT, shoppingcartController.updateCartItem);
+    router.delete('/api/cart/:itemId', authenticateJWT, shoppingcartController.removeCartItem);
+    router.delete('/api/carts', authenticateJWT, shoppingcartController.removeMultipleItems);
     router.get('/api/coupons', couponController.getAll);
     router.post('/api/coupons', couponController.create);
     router.put('/api/coupons/:id', couponController.update);
@@ -62,6 +64,9 @@ let initWebRoutes = (app) => {
     router.post('/api/brands', authenticateJWT, isAdmin, brandController.createBrand);
     router.put('/api/brands/:id', authenticateJWT, isAdmin, brandController.updateBrand);
     router.delete('/api/brands/:id', authenticateJWT, isAdmin, brandController.deleteBrand);
+
+    // Payment route
+    router.post('/api/payment/process', paymentController.processPayment);
 
     return app.use("/", router);
 }

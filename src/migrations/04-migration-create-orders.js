@@ -10,13 +10,37 @@ module.exports = {
       },
       userId: {
         type: Sequelize.INTEGER,
+        allowNull: true,
         references: { model: 'users', key: 'id' }
       },
       totalPrice: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
       status: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue: 'pending'
+      },
+      shippingAddress: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      paymentMethod: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      customerName: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      customerPhone: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      customerEmail: {
+        type: Sequelize.STRING,
+        allowNull: false
       },
       createdAt: {
         allowNull: false,
