@@ -373,4 +373,65 @@ let remove = async (req, res) => {
     }
 };
 
-module.exports = { create, getAll, getById, update, remove }; 
+let updateStatus = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { status } = req.body;
+
+        // Validate status
+        const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({
+                message: 'Invalid status',
+                validStatuses: validStatuses
+            });
+        }
+
+        // Find order
+        const order = await Order.findByPk(orderId, {
+            include: [{
+                model: OrderItem,
+                include: [{
+                    model: Product
+                }]
+            }]
+        });
+
+        if (!order) {
+            return res.status(404).json({
+                message: 'Order not found'
+            });
+        }
+
+        // If cancelling order, restore product quantities
+        if (status === 'cancelled' && order.status !== 'cancelled') {
+            for (const item of order.OrderItems) {
+                await Product.increment('quantity', {
+                    by: item.quantity,
+                    where: { id: item.productId }
+                });
+            }
+        }
+
+        // Update order status
+        await order.update({ status });
+
+        return res.status(200).json({
+            message: 'Order status updated successfully',
+            order: {
+                id: order.id,
+                status: order.status,
+                updatedAt: order.updatedAt
+            }
+        });
+
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        return res.status(500).json({
+            message: 'Error updating order status',
+            error: error.message
+        });
+    }
+};
+
+module.exports = { create, getAll, getById, update, remove, updateStatus }; 
