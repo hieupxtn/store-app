@@ -19,22 +19,22 @@ let handleUserLogin = (email, password) => {
                     let check = await bcrypt.compareSync(password, user.password)
                     if(check) {
                         userData.errCode = 0;
-                        userData.errMessage = "Login succeed!";
+                        userData.errMessage = "Đăng nhập thành công!";
                         userData.email = email;
                         userData.password = hashPasswordFromBcrypt;
                         delete user.password;
                         userData.user = user;
                     } else {
                         userData.errCode = 3;
-                        userData.errMessage = "Wrong password";
+                        userData.errMessage = "Mật khẩu không đúng";
                     }
                 } else {
                     userData.errCode = 2;
-                    userData.errMessage = "User's not found";
+                    userData.errMessage = "Email không tồn tại trong hệ thống";
                 }
             } else {
                 userData.errCode = 1;
-                userData.errMessage = "Email isn't exist in your system";
+                userData.errMessage = "Email không tồn tại trong hệ thống";
             }
             resolve(userData);
         } catch (e) {
@@ -91,7 +91,7 @@ let postUser = (data) => {
                 payment: data.payment,
             })
 
-            resolve('Create a user succeed!')
+            resolve('Tạo người dùng thành công!')
         } catch (e) {
            reject(e)
         }

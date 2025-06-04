@@ -5,10 +5,9 @@ const { Op } = require('sequelize');
 
 let getCart = async (req, res) => {
     try {
-        // Get userId from authenticated user
         const userId = req.user.id;
         if (!userId) {
-            return res.status(401).json({ message: 'Unauthorized - Please login' });
+            return res.status(401).json({ message: 'Bạn chưa đăng nhập' });
         }
 
         let cart = await db.ShoppingCart.findAll({ 
@@ -31,28 +30,24 @@ let addToCart = async (req, res) => {
     try {
         const userId = req.user.id;
         if (!userId) {
-            return res.status(401).json({ message: 'Unauthorized - Please login' });
+            return res.status(401).json({ message: 'Bạn chưa đăng nhập' });
         }
 
         const { productId, quantity } = req.body;
         
-        // Validate product exists
         const product = await db.Product.findByPk(productId);
         if (!product) {
-            return res.status(404).json({ message: 'Product not found' });
+            return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
         }
 
-        // Check if product already in cart
         let cartItem = await db.ShoppingCart.findOne({
             where: { userId, productId }
         });
 
         if (cartItem) {
-            // Update quantity if product already in cart
             cartItem.quantity += quantity;
             await cartItem.save();
         } else {
-            // Create new cart item
             cartItem = await db.ShoppingCart.create({
                 userId,
                 productId,
@@ -70,7 +65,7 @@ let updateCartItem = async (req, res) => {
     try {
         const userId = req.user.id;
         if (!userId) {
-            return res.status(401).json({ message: 'Unauthorized - Please login' });
+            return res.status(401).json({ message: 'Bạn chưa đăng nhập' });
         }
 
         const { itemId } = req.params;
@@ -81,12 +76,12 @@ let updateCartItem = async (req, res) => {
         });
 
         if (!cartItem) {
-            return res.status(404).json({ message: 'Cart item not found' });
+            return res.status(404).json({ message: 'Không tìm thấy sản phẩm trong giỏ hàng' });
         }
 
         if (quantity <= 0) {
             await cartItem.destroy();
-            return res.status(200).json({ message: 'Item removed from cart' });
+            return res.status(200).json({ message: 'Đã xóa sản phẩm khỏi giỏ hàng' });
         }
 
         cartItem.quantity = quantity;
@@ -102,7 +97,7 @@ let removeCartItem = async (req, res) => {
     try {
         const userId = req.user.id;
         if (!userId) {
-            return res.status(401).json({ message: 'Unauthorized - Please login' });
+            return res.status(401).json({ message: 'Bạn chưa đăng nhập' });
         }
 
         const { itemId } = req.params;
@@ -112,11 +107,11 @@ let removeCartItem = async (req, res) => {
         });
 
         if (!cartItem) {
-            return res.status(404).json({ message: 'Cart item not found' });
+            return res.status(404).json({ message: 'Không tìm thấy sản phẩm trong giỏ hàng' });
         }
 
         await cartItem.destroy();
-        return res.status(200).json({ message: 'Item removed from cart' });
+        return res.status(200).json({ message: 'Đã xóa sản phẩm khỏi giỏ hàng' });
     } catch (e) {
         return res.status(500).json({ message: e.message });
     }
@@ -129,13 +124,13 @@ let removeMultipleItems = async (req, res) => {
         // Validate input
         if (!userId) {
             return res.status(400).json({
-                message: 'User ID is required'
+                message: 'User ID là bắt buộc'
             });
         }
 
         if (!Array.isArray(itemIds) || itemIds.length === 0) {
             return res.status(400).json({
-                message: 'Item IDs must be a non-empty array'
+                message: 'Item IDs phải là mảng không rỗng'
             });
         }
 
@@ -153,7 +148,7 @@ let removeMultipleItems = async (req, res) => {
             const foundIds = items.map(item => item.id);
             const missingIds = itemIds.filter(id => !foundIds.includes(id));
             return res.status(404).json({
-                message: 'Some items not found or do not belong to the user',
+                message: 'Một số sản phẩm không tồn tại hoặc không thuộc về bạn',
                 missingItemIds: missingIds
             });
         }
@@ -169,14 +164,14 @@ let removeMultipleItems = async (req, res) => {
         });
 
         return res.status(200).json({
-            message: 'Items removed from cart successfully',
+            message: 'Đã xóa sản phẩm khỏi giỏ hàng thành công',
             removedItems: itemIds
         });
 
     } catch (error) {
         console.error('Error removing items from cart:', error);
         return res.status(500).json({
-            message: 'Error removing items from cart',
+            message: 'Lỗi khi xóa sản phẩm khỏi giỏ hàng',
             error: error.message
         });
     }

@@ -26,7 +26,7 @@ let getBrandById = async (req, res) => {
             }]
         });
         if (!brand) {
-            return res.status(404).json({ message: 'Brand not found' });
+            return res.status(404).json({ message: 'Không tìm thấy thương hiệu' });
         }
         return res.status(200).json(brand);
     } catch (e) {
@@ -51,7 +51,7 @@ let updateBrand = async (req, res) => {
     try {
         let brand = await db.Brand.findOne({ where: { id: req.params.id } });
         if (!brand) {
-            return res.status(404).json({ message: 'Brand not found' });
+            return res.status(404).json({ message: 'Không tìm thấy thương hiệu' });
         }
         
         await brand.update({
@@ -70,11 +70,11 @@ let deleteBrand = async (req, res) => {
     try {
         let brand = await db.Brand.findOne({ where: { id: req.params.id } });
         if (!brand) {
-            return res.status(404).json({ message: 'Brand not found' });
+            return res.status(404).json({ message: 'Không tìm thấy thương hiệu' });
         }
         
         await brand.destroy();
-        return res.status(200).json({ message: 'Brand deleted successfully' });
+        return res.status(200).json({ message: 'Thương hiệu đã được xóa thành công' });
     } catch (e) {
         return res.status(500).json({ message: e.message });
     }

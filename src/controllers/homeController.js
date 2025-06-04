@@ -51,7 +51,7 @@ let getFeaturedProducts = async (req, res) => {
         console.log(e);
         return res.status(500).json({
             errCode: 1,
-            message: 'Error retrieving featured products'
+            message: 'Lỗi khi lấy sản phẩm nổi bật'
         });
     }
 }

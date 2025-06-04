@@ -38,6 +38,7 @@ let initWebRoutes = (app) => {
     router.post('/api/orders', orderController.create);
     router.get('/api/orders', orderController.getAll);
     router.get('/api/orders/:id', orderController.getById);
+    router.get('/api/users/:userId/orders', orderController.getByUserId);
     router.put('/api/orders/:id', orderController.update);
     router.delete('/api/orders/:id', orderController.remove);
     router.patch('/api/orders/:orderId/status', orderController.updateStatus);

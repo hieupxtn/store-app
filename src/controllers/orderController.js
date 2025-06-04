@@ -62,7 +62,7 @@ let create = async (req, res) => {
             const foundIds = products.map(p => p.id);
             const missingIds = productIds.filter(id => !foundIds.includes(id));
             return res.status(404).json({
-                message: 'Some products not found',
+                message: 'Một số sản phẩm không tìm thấy',
                 missingProductIds: missingIds
             });
         }
@@ -75,7 +75,7 @@ let create = async (req, res) => {
 
             if (item.quantity > product.quantity) {
                 return res.status(400).json({
-                    message: `Insufficient stock for product ${product.id}`,
+                    message: `Không đủ hàng cho sản phẩm ${product.id}`,
                     productId: product.id,
                     available: product.quantity,
                     requested: item.quantity
@@ -236,7 +236,7 @@ let getById = async (req, res) => {
 
         if (!order) {
             return res.status(404).json({ 
-                message: 'Order not found' 
+                message: 'Không tìm thấy đơn hàng' 
             });
         }
 
@@ -281,7 +281,7 @@ let update = async (req, res) => {
         const order = await db.Order.findByPk(req.params.id);
         if (!order) {
             return res.status(404).json({ 
-                message: 'Order not found' 
+                message: 'Không tìm thấy đơn hàng' 
             });
         }
 
@@ -298,7 +298,7 @@ let update = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Order updated successfully',
+            message: 'Cập nhật trạng thái đơn hàng thành công',
             order: {
                 id: order.id,
                 status: order.status,
@@ -310,7 +310,7 @@ let update = async (req, res) => {
     } catch (e) {
         console.error('Error updating order:', e);
         return res.status(500).json({ 
-            message: 'Error updating order',
+            message: 'Lỗi khi cập nhật trạng thái đơn hàng',
             error: e.message 
         });
     }
@@ -321,7 +321,7 @@ let remove = async (req, res) => {
         const order = await db.Order.findByPk(req.params.id);
         if (!order) {
             return res.status(404).json({ 
-                message: 'Order not found' 
+                message: 'Không tìm thấy đơn hàng' 
             });
         }
 
@@ -382,7 +382,7 @@ let updateStatus = async (req, res) => {
         const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
         if (!validStatuses.includes(status)) {
             return res.status(400).json({
-                message: 'Invalid status',
+                message: 'Trạng thái không hợp lệ',
                 validStatuses: validStatuses
             });
         }
@@ -399,7 +399,7 @@ let updateStatus = async (req, res) => {
 
         if (!order) {
             return res.status(404).json({
-                message: 'Order not found'
+                message: 'Không tìm thấy đơn hàng'
             });
         }
 
@@ -417,7 +417,7 @@ let updateStatus = async (req, res) => {
         await order.update({ status });
 
         return res.status(200).json({
-            message: 'Order status updated successfully',
+            message: 'Cập nhật trạng thái đơn hàng thành công',
             order: {
                 id: order.id,
                 status: order.status,
@@ -428,10 +428,73 @@ let updateStatus = async (req, res) => {
     } catch (error) {
         console.error('Error updating order status:', error);
         return res.status(500).json({
-            message: 'Error updating order status',
+            message: 'Lỗi khi cập nhật trạng thái đơn hàng',
             error: error.message
         });
     }
 };
 
-module.exports = { create, getAll, getById, update, remove, updateStatus }; 
+let getByUserId = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        
+        // Validate user exists
+        const user = await db.User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ 
+                message: 'Không tìm thấy người dùng' 
+            });
+        }
+
+        const orders = await db.Order.findAll({
+            where: { userId },
+            include: [{
+                model: db.OrderItem,
+                include: [{
+                    model: db.Product,
+                    include: [{
+                        model: db.ProductType,
+                        attributes: ['name']
+                    }]
+                }]
+            }],
+            order: [['createdAt', 'DESC']]
+        });
+
+        const formattedOrders = orders.map(order => ({
+            id: order.id,
+            totalAmount: order.totalPrice,
+            status: order.status,
+            shippingAddress: order.shippingAddress,
+            paymentMethod: order.paymentMethod,
+            customerInfo: {
+                name: order.customerName,
+                phone: order.customerPhone,
+                email: order.customerEmail
+            },
+            items: order.OrderItems.map(item => ({
+                productId: item.productId,
+                productName: item.Product.productName,
+                productType: item.Product.ProductType.name,
+                quantity: item.quantity,
+                price: item.price,
+                total: item.quantity * item.price
+            })),
+            createdAt: order.createdAt,
+            updatedAt: order.updatedAt
+        }));
+
+        return res.status(200).json({
+            success: true,
+            orders: formattedOrders
+        });
+    } catch (e) {
+        console.error('Error getting user orders:', e);
+        return res.status(500).json({ 
+            message: 'Lỗi khi lấy danh sách đơn hàng',
+            error: e.message 
+        });
+    }
+};
+
+module.exports = { create, getAll, getById, update, remove, updateStatus, getByUserId }; 

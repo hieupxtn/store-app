@@ -21,7 +21,7 @@ let create = async (req, res) => {
 let update = async (req, res) => {
     try {
         let type = await db.ProductType.findByPk(req.params.id);
-        if (!type) return res.status(404).json({ message: 'Type not found' });
+        if (!type) return res.status(404).json({ message: 'Không tìm thấy loại sản phẩm' });
         await type.update(req.body);
         return res.status(200).json({ type });
     } catch (e) {
@@ -32,7 +32,7 @@ let update = async (req, res) => {
 let remove = async (req, res) => {
     try {
         let type = await db.ProductType.findByPk(req.params.id);
-        if (!type) return res.status(404).json({ message: 'Type not found' });
+        if (!type) return res.status(404).json({ message: 'Không tìm thấy loại sản phẩm' });
         await type.destroy();
         return res.status(204).send();
     } catch (e) {

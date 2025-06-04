@@ -5,8 +5,11 @@ import jwt from 'jsonwebtoken'
 let register = async (req, res) => {
     try {
         let { email, password, firstName, lastName, address, gender, role } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Missing email or password' });
+        if (!email) {
+            return res.status(400).json({ message: 'Vui lòng nhập email' });
+        }
+        if (!password) {
+            return res.status(400).json({ message: 'Vui lòng nhập mật khẩu' });
         }
         let hash = bcrypt.hashSync(password, 10);
         let user = await db.User.create({ email, password: hash, firstName, lastName, address, gender, role });
@@ -19,12 +22,18 @@ let register = async (req, res) => {
 let login = async (req, res) => {
     try {
         let { email, password } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Missing email or password' });
+        if (!email) {
+            return res.status(400).json({ message: 'Vui lòng nhập email' });
+        }
+        if (!password) {
+            return res.status(400).json({ message: 'Vui lòng nhập mật khẩu' });
         }
         let user = await db.User.findOne({ where: { email } });
-        if (!user || !bcrypt.compareSync(password, user.password)) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+        if (!user) {
+            return res.status(401).json({ message: 'Email không tồn tại trong hệ thống' });
+        }
+        if (!bcrypt.compareSync(password, user.password)) {
+            return res.status(401).json({ message: 'Mật khẩu không đúng' });
         }
         const token = jwt.sign(
             { id: user.id, email: user.email, role: user.role },
@@ -38,8 +47,7 @@ let login = async (req, res) => {
 };
 
 let logout = async (req, res) => {
-    // Với JWT, logout chỉ cần FE xóa token, backend chỉ trả về thông báo
-    return res.status(200).json({ message: 'Logout successful' });
+    return res.status(200).json({ message: 'Đăng xuất thành công' });
 };
 
 let getAll = async (req, res) => {
@@ -54,7 +62,7 @@ let getAll = async (req, res) => {
 let getById = async (req, res) => {
     try {
         let user = await db.User.findByPk(req.params.id);
-        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
         return res.status(200).json({ user });
     } catch (e) {
         return res.status(500).json({ message: e.message });

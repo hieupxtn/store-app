@@ -6,7 +6,6 @@ let getAll = async (req, res) => {
         
         let whereClause = {};
         
-        // Search by product name or description
         if (search) {
             whereClause[db.Sequelize.Op.or] = [
                 { productName: { [db.Sequelize.Op.like]: `%${search}%` } },
@@ -14,31 +13,26 @@ let getAll = async (req, res) => {
             ];
         }
 
-        // Filter by price range
         if (minPrice || maxPrice) {
             whereClause.price = {};
             if (minPrice) whereClause.price[db.Sequelize.Op.gte] = minPrice;
             if (maxPrice) whereClause.price[db.Sequelize.Op.lte] = maxPrice;
         }
 
-        // Filter by rating
         if (minRating) {
             whereClause.rating = {
                 [db.Sequelize.Op.gte]: parseFloat(minRating)
             };
         }
 
-        // Filter by product type
         if (typeId) {
             whereClause.productTypeId = typeId;
         }
 
-        // Filter by brand
         if (brandId) {
             whereClause.brandId = brandId;
         }
 
-        // Sorting options
         let orderClause = [];
         if (sort) {
             switch (sort) {
@@ -117,7 +111,7 @@ let getById = async (req, res) => {
                 'quantity'
             ]
         });
-        if (!product) return res.status(404).json({ message: 'Product not found' });
+        if (!product) return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
         return res.status(200).json({ product });
     } catch (e) {
         return res.status(500).json({ message: e.message });
@@ -136,7 +130,7 @@ let create = async (req, res) => {
 let update = async (req, res) => {
     try {
         let product = await db.Product.findByPk(req.params.id);
-        if (!product) return res.status(404).json({ message: 'Product not found' });
+        if (!product) return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
         await product.update(req.body);
         return res.status(200).json({ product });
     } catch (e) {
@@ -147,7 +141,7 @@ let update = async (req, res) => {
 let remove = async (req, res) => {
     try {
         let product = await db.Product.findByPk(req.params.id);
-        if (!product) return res.status(404).json({ message: 'Product not found' });
+        if (!product) return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
         await product.destroy();
         return res.status(204).send();
     } catch (e) {
@@ -196,7 +190,7 @@ let getRelatedProducts = async (req, res) => {
         const product = await db.Product.findByPk(productId);
         
         if (!product) {
-            return res.status(404).json({ message: 'Product not found' });
+            return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
         }
 
         const relatedProducts = await db.Product.findAll({

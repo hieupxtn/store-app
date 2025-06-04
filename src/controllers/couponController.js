@@ -21,7 +21,7 @@ let create = async (req, res) => {
 let update = async (req, res) => {
     try {
         let coupon = await db.Coupon.findByPk(req.params.id);
-        if (!coupon) return res.status(404).json({ message: 'Coupon not found' });
+        if (!coupon) return res.status(404).json({ message: 'Không tìm thấy mã giảm giá' });
         await coupon.update(req.body);
         return res.status(200).json({ coupon });
     } catch (e) {
@@ -32,7 +32,7 @@ let update = async (req, res) => {
 let remove = async (req, res) => {
     try {
         let coupon = await db.Coupon.findByPk(req.params.id);
-        if (!coupon) return res.status(404).json({ message: 'Coupon not found' });
+        if (!coupon) return res.status(404).json({ message: 'Không tìm thấy mã giảm giá' });
         await coupon.destroy();
         return res.status(204).send();
     } catch (e) {
@@ -44,7 +44,7 @@ let applyCoupon = async (req, res) => {
     try {
         let { code } = req.body;
         let coupon = await db.Coupon.findOne({ where: { code } });
-        if (!coupon) return res.status(404).json({ message: 'Coupon not found' });
+        if (!coupon) return res.status(404).json({ message: 'Không tìm thấy mã giảm giá' });
         // Có thể kiểm tra hạn sử dụng ở đây
         return res.status(200).json({ coupon });
     } catch (e) {

@@ -12,7 +12,7 @@ let processPayment = async (req, res) => {
         // Validate required fields
         if (!customerInfo || !customerInfo.name || !customerInfo.phone || !customerInfo.email) {
             return res.status(400).json({ 
-                message: 'Customer information is required (name, phone, email)' 
+                message: 'Vui lòng cung cấp thông tin khách hàng (tên, số điện thoại, email)' 
             });
         }
 
@@ -21,27 +21,27 @@ let processPayment = async (req, res) => {
         const cartItems = req.body.cartItems || [];
         
         if (!cartItems.length) {
-            return res.status(400).json({ message: 'Cart is empty' });
+            return res.status(400).json({ message: 'Giỏ hàng trống' });
         }
 
         // Validate and calculate total
         for (const item of cartItems) {
             if (!item.productId || !item.quantity) {
                 return res.status(400).json({ 
-                    message: 'Each cart item must have productId and quantity' 
+                    message: 'Mỗi sản phẩm trong giỏ hàng phải có productId và số lượng' 
                 });
             }
 
             const product = await db.Product.findByPk(item.productId);
             if (!product) {
                 return res.status(404).json({ 
-                    message: `Product with ID ${item.productId} not found` 
+                    message: `Không tìm thấy sản phẩm với ID ${item.productId}` 
                 });
             }
 
             if (product.quantity < item.quantity) {
                 return res.status(400).json({ 
-                    message: `Not enough stock for product ${product.productName}` 
+                    message: `Không đủ hàng cho sản phẩm ${product.productName}` 
                 });
             }
 
@@ -108,7 +108,7 @@ let processPayment = async (req, res) => {
         } else {
             return res.status(400).json({
                 success: false,
-                message: 'Payment failed. Please try again.'
+                message: 'Thanh toán thất bại. Vui lòng thử lại.'
             });
         }
     } catch (e) {
