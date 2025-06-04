@@ -379,7 +379,7 @@ let updateStatus = async (req, res) => {
         const { status } = req.body;
 
         // Validate status
-        const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+        const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'completed'];
         if (!validStatuses.includes(status)) {
             return res.status(400).json({
                 message: 'Trạng thái không hợp lệ',
@@ -497,4 +497,55 @@ let getByUserId = async (req, res) => {
     }
 };
 
-module.exports = { create, getAll, getById, update, remove, updateStatus, getByUserId }; 
+let updateReceived = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const order = await Order.findByPk(orderId);
+
+        if (!order) {
+            return res.status(404).json({
+                message: 'Không tìm thấy đơn hàng'
+            });
+        }
+
+        if (order.status !== 'delivered') {
+            return res.status(400).json({
+                message: 'Chỉ có thể đánh dấu đã nhận cho đơn hàng đang giao'
+            });
+        }
+
+        await order.update({
+            status: 'completed'
+        });
+
+        return res.status(200).json({
+            message: 'Đã cập nhật trạng thái đơn hàng thành đã nhận',
+            order: {
+                id: order.id,
+                status: order.status,
+                customerName: order.customerName,
+                totalPrice: order.totalPrice,
+                shippingAddress: order.shippingAddress,
+                updatedAt: order.updatedAt
+            }
+        });
+
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        return res.status(500).json({
+            message: 'Lỗi khi cập nhật trạng thái đơn hàng',
+            error: error.message
+        });
+    }
+};
+
+module.exports = {
+    create,
+    getAll,
+    getById,
+    update,
+    remove,
+    updateStatus,
+    getByUserId,
+    updateReceived
+}; 

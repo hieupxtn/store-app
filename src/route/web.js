@@ -42,6 +42,7 @@ let initWebRoutes = (app) => {
     router.put('/api/orders/:id', orderController.update);
     router.delete('/api/orders/:id', orderController.remove);
     router.patch('/api/orders/:orderId/status', orderController.updateStatus);
+    router.patch('/api/orders/:orderId/received', orderController.updateReceived);
     router.get('/api/cart', authenticateJWT, shoppingcartController.getCart);
     router.post('/api/cart', authenticateJWT, shoppingcartController.addToCart);
     router.put('/api/cart/:itemId', authenticateJWT, shoppingcartController.updateCartItem);
