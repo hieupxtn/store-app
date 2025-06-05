@@ -2,7 +2,7 @@ import db from '../models/index';
 
 let getAll = async (req, res) => {
     try {
-        const { search, minPrice, maxPrice, typeId, brandId, sort, minRating } = req.query;
+        const { search, minPrice, maxPrice, typeId, brandId, sort, maxRating } = req.query;
         
         let whereClause = {};
         
@@ -19,9 +19,10 @@ let getAll = async (req, res) => {
             if (maxPrice) whereClause.price[db.Sequelize.Op.lte] = maxPrice;
         }
 
-        if (minRating) {
+        if (maxRating) {
             whereClause.rating = {
-                [db.Sequelize.Op.gte]: parseFloat(minRating)
+                ...whereClause.rating,
+                [db.Sequelize.Op.lte]: parseFloat(maxRating)
             };
         }
 
@@ -37,7 +38,10 @@ let getAll = async (req, res) => {
         if (sort) {
             switch (sort) {
                 case 'featured':
-                    whereClause.rating = { [db.Sequelize.Op.gte]: 4 };
+                    whereClause.rating = {
+                        ...whereClause.rating,
+                        [db.Sequelize.Op.gte]: 4
+                    };
                     orderClause.push(['rating', 'DESC']);
                     break;
                 case 'price_low':

@@ -8,7 +8,14 @@ let dashboardStatistics = async (req, res) => {
             db.Order.count(),
             db.Review.count(),
             db.ProductType.count(),
-            db.Order.sum('totalPrice')
+            db.Order.sum('totalPrice', {
+                where: {
+                    [db.Sequelize.Op.or]: [
+                        { status: 'completed' },
+                        { paymentMethod: 'credit_card' }
+                    ]
+                }
+            })
         ]);
         return res.status(200).json({
             totalUsers: userCount,
